@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LibraFlow — Library Management System</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='28'>📚</text></svg>" />
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">📚</span>
+        <span class="logo-text">LibraFlow</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">◈</span><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="books">
+        <span class="nav-icon">◉</span><span>Books</span>
+      </a>
+      <a href="#" class="nav-item" data-page="members">
+        <span class="nav-icon">◎</span><span>Members</span>
+      </a>
+      <a href="#" class="nav-item" data-page="borrow">
+        <span class="nav-icon">⊕</span><span>Borrow Book</span>
+      </a>
+      <a href="#" class="nav-item" data-page="returns">
+        <span class="nav-icon">⊖</span><span>Return Book</span>
+      </a>
+      <a href="#" class="nav-item" data-page="fines">
+        <span class="nav-icon">⊗</span><span>Fines & Records</span>
+      </a>
+      <a href="#" class="nav-item" data-page="settings">
+        <span class="nav-icon">⊙</span><span>Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="version-tag">v1.0 · LibraFlow</span>
+    </div>
+  </aside>
+
+  <!-- Mobile Overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="page-title-area">
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-global">
+          <input type="text" id="globalSearch" placeholder="Search books, members…" autocomplete="off" />
+          <span class="search-icon">⌕</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Pages -->
+    <div class="pages-wrapper">
+
+      <!-- DASHBOARD PAGE -->
+      <section class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-value" id="statTotalBooks">—</div>
+            <div class="stat-label">Total Books</div>
+            <div class="stat-sub" id="statTotalCopies">— copies</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statMembers">—</div>
+            <div class="stat-label">Active Members</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-value" id="statBorrowed">—</div>
+            <div class="stat-label">Currently Borrowed</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-value" id="statOverdue">—</div>
+            <div class="stat-label">Overdue Returns</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-value" id="statFines">৳—</div>
+            <div class="stat-label">Total Fines</div>
+            <div class="stat-sub" id="statPendingFines">৳— pending</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <h2>Recent Activity</h2>
+            </div>
+            <div class="activity-list" id="recentActivity">
+              <div class="loading-state">Loading…</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Books by Category</h2>
+            </div>
+            <div class="category-chart" id="categoryChart">
+              <div class="loading-state">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOOKS PAGE -->
+      <section class="page" id="page-books">
+        <div class="page-actions">
+          <div class="search-bar">
+            <input type="text" id="bookSearch" placeholder="Search by title, author, ISBN…" />
+          </div>
+          <div class="filter-group">
+            <select id="bookCategoryFilter">
+              <option value="">All Categories</option>
+              <option value="Fiction">Fiction</option>
+              <option value="Classic">Classic</option>
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Dystopia">Dystopia</option>
+              <option value="Philosophy">Philosophy</option>
+              <option value="History">History</option>
+              <option value="Science">Science</option>
+              <option value="Technology">Technology</option>
+              <option value="Other">Other</option>
+            </select>
+            <label class="checkbox-filter">
+              <input type="checkbox" id="availableOnly" /> Available only
+            </label>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addBookModal')">+ Add Book</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="booksTable">
+            <thead>
+              <tr>
+                <th>ISBN</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Copies</th>
+                <th>Available</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="booksTableBody">
+              <tr><td colspan="7" class="loading-row">Loading books…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MEMBERS PAGE -->
+      <section class="page" id="page-members">
+        <div class="page-actions">
+          <div class="search-bar">
+            <input type="text" id="memberSearch" placeholder="Search by name, ID, email…" />
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addMemberModal')">+ Add Member</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Member ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Active Borrows</th>
+                <th>Pending Fines</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="membersTableBody">
+              <tr><td colspan="7" class="loading-row">Loading members…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- BORROW PAGE -->
+      <section class="page" id="page-borrow">
+        <div class="action-card-container">
+          <div class="action-card">
+            <div class="action-card-icon">⊕</div>
+            <h2>Borrow a Book</h2>
+            <p>Issue a book to a library member. Ensure the member is registered and has no outstanding issues.</p>
+            <div class="form-group">
+              <label>Member ID</label>
+              <div class="input-with-search">
+                <input type="text" id="borrowMemberId" placeholder="e.g. MEM001" autocomplete="off" />
+                <button class="btn-icon" onclick="lookupMember()">Search</button>
+              </div>
+              <div class="member-preview" id="memberPreview" style="display:none"></div>
+            </div>
+            <div class="form-group">
+              <label>Book ISBN</label>
+              <div class="input-with-search">
+                <input type="text" id="borrowBookIsbn" placeholder="e.g. 978-0-06-112008-4" autocomplete="off" />
+                <button class="btn-icon" onclick="lookupBook()">Search</button>
+              </div>
+              <div class="book-preview" id="bookPreview" style="display:none"></div>
+            </div>
+            <div class="form-group">
+              <label>Borrow Date</label>
+              <input type="text" id="borrowDate" readonly />
+            </div>
+            <div class="form-group">
+              <label>Due Date (14 days)</label>
+              <input type="text" id="dueDate" readonly />
+            </div>
+            <button class="btn btn-primary btn-full" onclick="borrowBook()">Confirm Borrow</button>
+          </div>
+
+          <div class="quick-search-panel">
+            <h3>Quick Book Search</h3>
+            <input type="text" id="quickBookSearch" placeholder="Search available books…" oninput="quickSearchBooks(this.value)" />
+            <div class="quick-results" id="quickBookResults"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RETURNS PAGE -->
+      <section class="page" id="page-returns">
+        <div class="action-card-container">
+          <div class="action-card">
+            <div class="action-card-icon">⊖</div>
+            <h2>Return a Book</h2>
+            <p>Process a book return. Any overdue fines will be calculated automatically.</p>
+            <div class="form-group">
+              <label>Borrow ID or Member ID</label>
+              <div class="input-with-search">
+                <input type="text" id="returnSearch" placeholder="e.g. BR00001 or MEM001" autocomplete="off" />
+                <button class="btn-icon" onclick="searchBorrowRecords()">Search</button>
+              </div>
+            </div>
+            <div class="return-results" id="returnResults"></div>
+          </div>
+
+          <div class="quick-search-panel">
+            <h3>Currently Borrowed</h3>
+            <div class="active-borrows-list" id="activeBorrowsList">
+              <div class="loading-state">Loading active borrows…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINES PAGE -->
+      <section class="page" id="page-fines">
+        <div class="page-actions">
+          <div class="filter-group">
+            <select id="finesStatusFilter" onchange="loadFines()">
+              <option value="">All Records</option>
+              <option value="returned">Returned</option>
+              <option value="borrowed">Active</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+          <div class="fine-summary-badges" id="fineSummaryBadges"></div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Borrow ID</th>
+                <th>Member</th>
+                <th>Book</th>
+                <th>Borrow Date</th>
+                <th>Due Date</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th>Fine</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="finesTableBody">
+              <tr><td colspan="9" class="loading-row">Loading records…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SETTINGS PAGE -->
+      <section class="page" id="page-settings">
+        <div class="settings-container">
+          <div class="card settings-card">
+            <div class="card-header">
+              <h2>Fine Configuration</h2>
+              <span class="card-badge">Admin</span>
+            </div>
+            <div class="form-group">
+              <label>Fine per Day (৳)</label>
+              <input type="number" id="finePerDay" min="0" step="0.50" placeholder="5.00" />
+            </div>
+            <div class="form-group">
+              <label>Maximum Borrow Days</label>
+              <input type="number" id="maxBorrowDays" min="1" max="60" placeholder="14" />
+            </div>
+            <div class="form-group">
+              <label>Grace Period (days)</label>
+              <input type="number" id="gracePeriodDays" min="0" max="10" placeholder="0" />
+            </div>
+            <button class="btn btn-primary" onclick="saveConfig()">Save Configuration</button>
+          </div>
+
+          <div class="card settings-card">
+            <div class="card-header">
+              <h2>About LibraFlow</h2>
+            </div>
+            <div class="about-info">
+              <p><strong>Version:</strong> 1.0.0</p>
+              <p><strong>Database:</strong> PostgreSQL (Neon)</p>
+              <p><strong>Hosted on:</strong> Vercel</p>
+              <p><strong>Fine Currency:</strong> BDT (৳)</p>
+              <p class="about-note">LibraFlow is a full-featured library management system designed for efficiency on both desktop and mobile devices.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- .pages-wrapper -->
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- Add Book Modal -->
+  <div class="modal-backdrop" id="addBookModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add New Book</h3>
+        <button class="modal-close" onclick="closeModal('addBookModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>ISBN *</label>
+            <input type="text" id="newBookIsbn" placeholder="978-0-00-000000-0" />
+          </div>
+          <div class="form-group">
+            <label>Total Copies</label>
+            <input type="number" id="newBookCopies" min="1" value="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="newBookTitle" placeholder="Book title" />
+        </div>
+        <div class="form-group">
+          <label>Author *</label>
+          <input type="text" id="newBookAuthor" placeholder="Author name" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="newBookCategory">
+              <option value="">Select category</option>
+              <option>Fiction</option><option>Classic</option><option>Sci-Fi</option>
+              <option>Fantasy</option><option>Dystopia</option><option>Philosophy</option>
+              <option>History</option><option>Science</option><option>Technology</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Published Year</label>
+            <input type="number" id="newBookYear" placeholder="2024" min="1000" max="2099" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Publisher</label>
+          <input type="text" id="newBookPublisher" placeholder="Publisher name" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('addBookModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="addBook()">Add Book</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Member Modal -->
+  <div class="modal-backdrop" id="addMemberModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add New Member</h3>
+        <button class="modal-close" onclick="closeModal('addMemberModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="newMemberName" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="newMemberEmail" placeholder="email@example.com" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" id="newMemberPhone" placeholder="01700-000000" />
+          </div>
+          <div class="form-group">
+            <label>Membership Type</label>
+            <select id="newMemberType">
+              <option value="standard">Standard</option>
+              <option value="premium">Premium</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <textarea id="newMemberAddress" placeholder="Home address" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('addMemberModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="addMember()">Add Member</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Confirmation Modal -->
+  <div class="modal-backdrop" id="returnConfirmModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>Confirm Return</h3>
+        <button class="modal-close" onclick="closeModal('returnConfirmModal')">✕</button>
+      </div>
+      <div class="modal-body" id="returnConfirmBody">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('returnConfirmModal')">Cancel</button>
+        <button class="btn btn-primary" id="confirmReturnBtn">Confirm Return</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
